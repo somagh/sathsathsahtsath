@@ -18,27 +18,97 @@ import java.util.Random;
  */
 public class AI
 {
+    class Vaziat{
+        public CellState front, right, left;
+    }
+
+    CellState getState(int x, int y, Cell[] mycells){
+        Entity e = map.getCell(x, y).getBeetle();
+        if (e == null)
+            return CellState.Blank;
+        Beetle b = (Beetle) e;
+        Cell c = b.getPosition();
+        for (Cell cell: mycells)
+            if (cell.getX() == c.getX() && cell.getY() == c.getY())
+                return CellState.Ally;
+        return CellState.Enemy;
+    }
+    Map map;
+
     int[][][][] strategy=new int[2][3][2][3];
     public void doTurn(World game)
     {
         // fill this method, we've presented a stupid AI for example!
         Random rand = new Random();
 
-        Map map = game.getMap();
+        map = game.getMap();
         Cell[] cells = map.getMyCells();
         List<Beetle> beetles=new ArrayList<>();
+        List<Vaziat> vaziats = new ArrayList<>();
+
         int max_power=0;
         for (Cell cell : cells) {
             beetles.add((Beetle) cell.getBeetle());
             max_power = Math.max(max_power, beetles.get(beetles.size() - 1).getPower());
         }
-        for(Beetle beetle:beetles)
-        {
-            if(beetle.getPower()<max_power/2&&beetle.getBeetleType().equals(BeetleType.HIGH))
-                game.changeType(beetle,BeetleType.LOW);
-            if(beetle.getPower()>=max_power/2&&beetle.getBeetleType().equals(BeetleType.LOW))
-                game.changeType(beetle,BeetleType.HIGH);
+        for(Beetle beetle:beetles) {
+            if (beetle.getPower() < max_power / 2 && beetle.getBeetleType().equals(BeetleType.HIGH))
+                game.changeType(beetle, BeetleType.LOW);
+            if (beetle.getPower() >= max_power / 2 && beetle.getBeetleType().equals(BeetleType.LOW))
+                game.changeType(beetle, BeetleType.HIGH);
+
+            Vaziat vaziat = new Vaziat();
+            int x = beetle.getRow(), y = beetle.getColumn();
+            int rightX = x, rightY = y, leftX = x, leftY = y, frontDirX = 0, frontDirY = 0;
+            int n = map.getHeight(), m = map.getWidth();
+            switch (beetle.getDirection()) {
+                case Down:
+                    rightX = (x + 1) % m;
+                    leftY = (y + 1) % m;
+                    rightY = (y + m - 1) % m;
+                    leftX = rightX;
+                    frontDirX = 1;
+                    break;
+                case Up:
+                    rightX = (x + n - 1) % m;
+                    rightY = (y + 1) % m;
+                    leftY = (y + m - 1) % m;
+                    leftX = rightX;
+                    frontDirX = -1;
+                    break;
+                case Right:
+
+                    rightX = (x + 1) % m;
+                    leftY = (y + 1) % m;
+                    rightY = leftY;
+                    leftX = (x + n - 1) % m;
+                    frontDirY = 1;
+                    break;
+                case Left:
+
+                    leftX = (x + 1) % m;
+                    leftY = (y + m - 1) % m;
+                    rightY = leftY;
+                    rightX = (x + n - 1) % m;
+                    frontDirY = -1;
+                    break;
+            }
+
+            vaziat.right = this.getState(rightX, rightY, cells);
+            vaziat.left = this.getState(leftX, leftY, cells);
+            do {
+                x = (x + frontDirX + n) % n;
+                y = (y + frontDirY + m) % m;
+                CellState c = getState(x, y, cells);
+                if (c == CellState.Blank)
+                    continue;
+                vaziat.front = c;
+                break;
+            } while (true);
+            vaziats.add(vaziat);
         }
+
+
 
         int[][][][][] scores=new int[2][3][2][3][3];
         for(int i=0;i<2;i++)

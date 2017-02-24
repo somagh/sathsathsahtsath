@@ -49,7 +49,7 @@ public class AI
                         scores[i][j][k][l][1] = 10; //moving forward is good
                         scores[i][j][k][l][0] = 0;
                         scores[i][j][k][l][2] = 0;
-                        scores[i][j][k][l][strategy[i][j][k][l]]+=20; //don't changing strategy is good
+                        scores[i][j][k][l][strategy[i][j][k][l]]+=10; //don't changing strategy is good
                     }
 
         for(Beetle bettle:beetles)

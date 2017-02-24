@@ -2,6 +2,8 @@ package client;
 
 import client.model.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -24,17 +26,18 @@ public class AI
 
         Map map = game.getMap();
         Cell[] cells = map.getMyCells();
-        for (Cell cell : cells)
+        List<Beetle> beetles=new ArrayList<>();
+        int max_power=0;
+        for (Cell cell : cells) {
+            beetles.add((Beetle) cell.getBeetle());
+            max_power = Math.max(max_power, beetles.get(beetles.size() - 1).getPower());
+        }
+        for(Beetle beetle:beetles)
         {
-            Beetle beetle = (Beetle) cell.getBeetle();
-            game.deterministicMove(beetle, Move.stepForward);
-            if (beetle.getBeetleType() == BeetleType.HIGH)
-            {
-                game.changeType(beetle, BeetleType.LOW);
-            } else
-            {
-                game.changeType(beetle, BeetleType.HIGH);
-            }
+            if(beetle.getPower()<max_power/2&&beetle.getBeetleType().equals(BeetleType.HIGH))
+                game.changeType(beetle,BeetleType.LOW);
+            if(beetle.getPower()>=max_power/2&&beetle.getBeetleType().equals(BeetleType.LOW))
+                game.changeType(beetle,BeetleType.HIGH);
         }
 
         if (game.getCurrentTurn() == 0)
@@ -45,8 +48,8 @@ public class AI
                 {
                     for (int k = 0; k < 3; k++)
                     {
-                        game.changeStrategy(BeetleType.LOW, CellState.values()[i], CellState.values()[j], CellState.values()[k], Move.values()[0]);
-                        game.changeStrategy(BeetleType.HIGH, CellState.values()[i], CellState.values()[j], CellState.values()[k], Move.values()[0]);
+                        game.changeStrategy(BeetleType.LOW, CellState.values()[i], CellState.values()[j], CellState.values()[k], Move.values()[1]);
+                        game.changeStrategy(BeetleType.HIGH, CellState.values()[i], CellState.values()[j], CellState.values()[k], Move.values()[1]);
                     }
                 }
             }

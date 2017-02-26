@@ -81,10 +81,10 @@ public class AI
         if(mapCells[x][y].getSlipper() != null) {
                 return -((Slipper) mapCells[x][y].getSlipper()).getRemainingTurns()*20;
         }
-        if(mapCells[x + dirX][y + dirY].getSlipper() != null) {
+        if(mapCells[(x + dirX + 10 * height) % height][(y + dirY + 10 * width) % width].getSlipper() != null) {
             return -((Slipper) mapCells[x][y].getSlipper()).getRemainingTurns()*20;
         }
-        if(mapCells[x + 2 * dirX][y + 2 * dirY].getSlipper() != null) {
+        if(mapCells[(x + 2 * dirX + 10 * height) % height][(y + 2 * dirY + 10 * width) % width].getSlipper() != null) {
             return -((Slipper) mapCells[x][y].getSlipper()).getRemainingTurns()*10;
         }
         return 0;

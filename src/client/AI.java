@@ -82,10 +82,10 @@ public class AI
                 return -((Slipper) mapCells[x][y].getSlipper()).getRemainingTurns()*20;
         }
         if(mapCells[(x + dirX + 10 * height) % height][(y + dirY + 10 * width) % width].getSlipper() != null) {
-            return -((Slipper) mapCells[x][y].getSlipper()).getRemainingTurns()*20;
+            return -((Slipper) mapCells[(x + dirX + 10 * height) % height][(y + dirY + 10 * width) % width].getSlipper()).getRemainingTurns()*20;
         }
         if(mapCells[(x + 2 * dirX + 10 * height) % height][(y + 2 * dirY + 10 * width) % width].getSlipper() != null) {
-            return -((Slipper) mapCells[x][y].getSlipper()).getRemainingTurns()*10;
+            return -((Slipper) mapCells[(x + 2 * dirX + 10 * height) % height][(y + 2 * dirY + 10 * width) % width].getSlipper()).getRemainingTurns()*10;
         }
         return 0;
     }
@@ -171,7 +171,7 @@ public class AI
                     StateToScore(beetle.getBeetleType(),state, Move.stepForward, -30);
     }
 
-    private void rougeFormation(Beetle beetle, State state, int dirX, int dirY){
+    private void rogueFormation(Beetle beetle, State state, int dirX, int dirY){
         int x = beetle.getPosition().getX(), y = beetle.getPosition().getY();
         Cell[][] cells = map.getCells();
 
@@ -322,7 +322,7 @@ public class AI
                     break;
             }
             if(beetle.is_sick()) {
-                rougeFormation(beetle, state, dirX, dirY);
+                rogueFormation(beetle, state, dirX, dirY);
                 attackFormation(beetle, state, dirX, dirY);
             }
             if(!beetle.has_winge()) {

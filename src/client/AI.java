@@ -4,7 +4,6 @@ import client.model.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 /**
  * AI class.
@@ -18,349 +17,213 @@ import java.util.Random;
  */
 public class AI
 {
-    class Vaziat{
-        public CellState front, right, left;
+    class State{
+        CellState front, right, left;
     }
 
-    void defenseFormation(Beetle beetle, Vaziat vaziat){
+    private void defenseFormation(Beetle beetle, State state, int dirX, int dirY){
         int x = beetle.getPosition().getX(), y = beetle.getPosition().getY();
-        Cell[][] cells = map.getCells();
-        int dirX, dirY = dirX = 0;
-        switch (beetle.getDirection()) {
-            case Down:
-                dirY = -1;
-                break;
-            case Up:
-                dirY = 1;
-                break;
-            case Left:
-                dirX = -1;
-                break;
-            case Right:
-                dirX = 1;
-                break;
-        }
 
         for(int i = -1; i <= 1; i += 2)
             if(getState(x + dirX + i * dirY,y + dirY + i * dirX, map.getMyCells()).equals(CellState.Enemy))
-                VazToScore(beetle.getBeetleType(),vaziat, Move.stepForward, -30);
+                StateToScore(beetle.getBeetleType(),state, Move.stepForward, -30);
 
         if(getState(x + dirX, y + dirY, map.getMyCells()).equals(CellState.Enemy))
-            VazToScore(beetle.getBeetleType(),vaziat, Move.stepForward, -60);
+            StateToScore(beetle.getBeetleType(),state, Move.stepForward, -60);
 
         if(getState(x + 2 * dirX, y + 2 * dirY, map.getMyCells()).equals(CellState.Enemy))
-            VazToScore(beetle.getBeetleType(),vaziat, Move.stepForward, -30);
+            StateToScore(beetle.getBeetleType(),state, Move.stepForward, -30);
 
 
         if(getState(x + dirY, y - dirX, map.getMyCells()).equals(CellState.Enemy)) {
-            VazToScore(beetle.getBeetleType(),vaziat, Move.turnRight, -30);
-            VazToScore(beetle.getBeetleType(),vaziat, Move.turnLeft, +30);
+            StateToScore(beetle.getBeetleType(),state, Move.turnRight, -30);
+            StateToScore(beetle.getBeetleType(),state, Move.turnLeft, +30);
         }
 
 
         if(getState(x + dirY, y - dirX, map.getMyCells()).equals(CellState.Enemy)){
-            VazToScore(beetle.getBeetleType(),vaziat, Move.turnLeft, -30);
-            VazToScore(beetle.getBeetleType(),vaziat, Move.turnRight, +30);
+            StateToScore(beetle.getBeetleType(),state, Move.turnLeft, -30);
+            StateToScore(beetle.getBeetleType(),state, Move.turnRight, +30);
         }
 
     }
 
-    void attackFormation(Beetle beetle, Vaziat vaziat){
+    private void attackFormation(Beetle beetle, State state, int dirX, int dirY){
         int x = beetle.getPosition().getX(), y = beetle.getPosition().getY();
-        Cell[][] cells = map.getCells();
-        int dirX, dirY = dirX = 0;
-        switch (beetle.getDirection()) {
-            case Down:
-                dirY = -1;
-                break;
-            case Up:
-                dirY = 1;
-                break;
-            case Left:
-                dirX = -1;
-                break;
-            case Right:
-                dirX = 1;
-                break;
-        }
 
         for(int i = -1; i <= 1; i += 2)
             if(getState(x + dirX + i * dirY,y + dirY + i * dirX, map.getMyCells()).equals(CellState.Enemy))
-                VazToScore(beetle.getBeetleType(),vaziat, Move.stepForward, 30);
+                StateToScore(beetle.getBeetleType(),state, Move.stepForward, 30);
 
         if(getState(x + dirX, y + dirY, map.getMyCells()).equals(CellState.Enemy))
-            VazToScore(beetle.getBeetleType(),vaziat, Move.stepForward, 60);
+            StateToScore(beetle.getBeetleType(),state, Move.stepForward, 60);
 
         if(getState(x + 2 * dirX, y + 2 * dirY, map.getMyCells()).equals(CellState.Enemy))
-            VazToScore(beetle.getBeetleType(),vaziat, Move.stepForward, 30);
+            StateToScore(beetle.getBeetleType(),state, Move.stepForward, 30);
 
 
         if(getState(x + dirY, y - dirX, map.getMyCells()).equals(CellState.Enemy)) {
-            VazToScore(beetle.getBeetleType(),vaziat, Move.turnRight, 30);
-            VazToScore(beetle.getBeetleType(),vaziat, Move.turnLeft, -30);
+            StateToScore(beetle.getBeetleType(),state, Move.turnRight, 30);
+            StateToScore(beetle.getBeetleType(),state, Move.turnLeft, -30);
         }
 
 
         if(getState(x + dirY, y - dirX, map.getMyCells()).equals(CellState.Enemy)){
-            VazToScore(beetle.getBeetleType(),vaziat, Move.turnLeft, 30);
-            VazToScore(beetle.getBeetleType(),vaziat, Move.turnRight, -30);
+            StateToScore(beetle.getBeetleType(),state, Move.turnLeft, 30);
+            StateToScore(beetle.getBeetleType(),state, Move.turnRight, -30);
         }
 
     }
 
-    int SlipperHits(int x, int y, int dirX, int dirY, Cell[][] mapcells){
-        if(mapcells[x][y].getSlipper() != null) {
-                return -((Slipper) mapcells[x][y].getSlipper()).getRemainingTurns()*20;
+    private int SlipperHits(int x, int y, int dirX, int dirY, Cell[][] mapCells){
+        x = (x + width * height) % height;
+        y = (y + width * height) % width;
+        if(mapCells[x][y].getSlipper() != null) {
+                return -((Slipper) mapCells[x][y].getSlipper()).getRemainingTurns()*20;
         }
-        if(mapcells[x + dirX][y + dirY].getSlipper() != null) {
-            return -((Slipper) mapcells[x][y].getSlipper()).getRemainingTurns()*20;
+        if(mapCells[x + dirX][y + dirY].getSlipper() != null) {
+            return -((Slipper) mapCells[x][y].getSlipper()).getRemainingTurns()*20;
         }
-        if(mapcells[x + 2 * dirX][y + 2 * dirY].getSlipper() != null) {
-            return -((Slipper) mapcells[x][y].getSlipper()).getRemainingTurns()*10;
+        if(mapCells[x + 2 * dirX][y + 2 * dirY].getSlipper() != null) {
+            return -((Slipper) mapCells[x][y].getSlipper()).getRemainingTurns()*10;
         }
         return 0;
     }
-    void abscondFormation(Beetle beetle, Vaziat vaziat){
+    private void abscondFormation(Beetle beetle, State state, int dirX, int dirY){
         int x = beetle.getPosition().getX(), y = beetle.getPosition().getY();
-        Cell[][] cells = map.getCells();
-        int dirX, dirY = dirX = 0;
-        switch (beetle.getDirection()) {
-            case Down:
-                dirY = -1;
-                break;
-            case Up:
-                dirY = 1;
-                break;
-            case Left:
-                dirX = -1;
-                break;
-            case Right:
-                dirX = 1;
-                break;
-        }
-
-        VazToScore(beetle.getBeetleType(),vaziat, Move.stepForward, SlipperHits(x + dirX, y + dirY, dirX, dirY, map.getCells()));
-        VazToScore(beetle.getBeetleType(),vaziat, Move.turnLeft, SlipperHits(x, y, dirY, -dirX, map.getCells()));
-        VazToScore(beetle.getBeetleType(),vaziat, Move.turnRight, SlipperHits(x, y, -dirY, dirX, map.getCells()));
+        
+        StateToScore(beetle.getBeetleType(),state, Move.stepForward, SlipperHits(x + dirX, y + dirY, dirX, dirY, map.getCells()));
+        StateToScore(beetle.getBeetleType(),state, Move.turnLeft, SlipperHits(x, y, dirY, -dirX, map.getCells()));
+        StateToScore(beetle.getBeetleType(),state, Move.turnRight, SlipperHits(x, y, -dirY, dirX, map.getCells()));
     }
 
-    void sacrificeFormation(Beetle beetle, Vaziat vaziat){
+    private void sacrificeFormation(Beetle beetle, State state, int dirX, int dirY){
         int x = beetle.getPosition().getX(), y = beetle.getPosition().getY();
-        Cell[][] cells = map.getCells();
-        int dirX, dirY = dirX = 0;
-        switch (beetle.getDirection()) {
-            case Down:
-                dirY = -1;
-                break;
-            case Up:
-                dirY = 1;
-                break;
-            case Left:
-                dirX = -1;
-                break;
-            case Right:
-                dirX = 1;
-                break;
-        }
 
-        VazToScore(beetle.getBeetleType(),vaziat, Move.stepForward, -SlipperHits(x + dirX, y + dirY, dirX, dirY, map.getCells()));
-        VazToScore(beetle.getBeetleType(),vaziat, Move.turnLeft, -SlipperHits(x, y, dirY, -dirX, map.getCells()));
-        VazToScore(beetle.getBeetleType(),vaziat, Move.turnRight, -SlipperHits(x, y, -dirY, dirX, map.getCells()));
+        StateToScore(beetle.getBeetleType(),state, Move.stepForward, -SlipperHits(x + dirX, y + dirY, dirX, dirY, map.getCells()));
+        StateToScore(beetle.getBeetleType(),state, Move.turnLeft, -SlipperHits(x, y, dirY, -dirX, map.getCells()));
+        StateToScore(beetle.getBeetleType(),state, Move.turnRight, -SlipperHits(x, y, -dirY, dirX, map.getCells()));
     }
 
 
-    void reproduceFormation(Beetle beetle, Vaziat vaziat){
+    private void reproduceFormation(Beetle beetle, State state, int dirX, int dirY){
         int x = beetle.getPosition().getX(), y = beetle.getPosition().getY();
         Cell[][] cells = map.getCells();
-        int dirX, dirY = dirX = 0;
-        switch (beetle.getDirection()) {
-            case Down:
-                dirY = -1;
-                break;
-            case Up:
-                dirY = 1;
-                break;
-            case Left:
-                dirX = -1;
-                break;
-            case Right:
-                dirX = 1;
-                break;
-        }
 
-        if(cells[x + dirX][y + dirY].getItem() != null)
-            if(cells[x + dirX][y + dirY].getItem() instanceof Food)
-                VazToScore(beetle.getBeetleType(),vaziat, Move.stepForward, +20);
+        if(cells[(x + dirX + 10 * height) % height][(y + dirY + 10 * width) % width].getItem() != null)
+            if(cells[(x + dirX + 10 * height) % height][(y + dirY + 10 * width) % width].getItem() instanceof Food)
+                StateToScore(beetle.getBeetleType(),state, Move.stepForward, +20);
 
 
-        if(cells[x + 2 * dirX][y + 2 * dirY].getItem() != null)
-            if(cells[x + 2 * dirX][y + 2 * dirY].getItem() instanceof Food)
-                VazToScore(beetle.getBeetleType(),vaziat, Move.stepForward, +8);
+        if(cells[(x + 2 * dirX + 10 * height) % height][(y + 2 * dirY + 10 * width) % width].getItem() != null)
+            if(cells[(x + 2 * dirX + 10 * height) % height][(y + 2 * dirY + 10 * width) % width].getItem() instanceof Food)
+                StateToScore(beetle.getBeetleType(),state, Move.stepForward, +8);
 
-        if(cells[x + dirY][y - dirX].getItem() != null)
-            if(cells[x + dirY][y - dirX].getItem() instanceof Food)
-                VazToScore(beetle.getBeetleType(),vaziat, Move.turnRight, +8);
+        if(cells[(x + dirY + height * width) % height][(y - dirX + height * width) % width].getItem() != null)
+            if(cells[(x + dirY + height * width) % height][(y - dirX + height * width) % width].getItem() instanceof Food)
+                StateToScore(beetle.getBeetleType(),state, Move.turnRight, +8);
 
-        if(cells[x - dirY][y + dirX].getItem() != null)
-            if(cells[x - dirY][y + dirX].getItem() instanceof Food)
-                VazToScore(beetle.getBeetleType(),vaziat, Move.turnLeft, +8);
+        if(cells[(x - dirY + height * width) % height][(y + dirX + height * width) % width].getItem() != null)
+            if(cells[(x - dirY + height * width) % height][(y + dirX + height * width) % width].getItem() instanceof Food)
+                StateToScore(beetle.getBeetleType(),state, Move.turnLeft, +8);
     }
 
-    void infertilizationFormation(Beetle beetle, Vaziat vaziat){
+    private void infertilityFormation(Beetle beetle, State state, int dirX, int dirY){
 
         int x = beetle.getPosition().getX(), y = beetle.getPosition().getY();
         Cell[][] cells = map.getCells();
-        int dirX, dirY = dirX = 0;
-        switch (beetle.getDirection()) {
-            case Down:
-                dirY = -1;
-                break;
-            case Up:
-                dirY = 1;
-                break;
-            case Left:
-                dirX = -1;
-                break;
-            case Right:
-                dirX = 1;
-                break;
-        }
 
-        if(cells[x + dirX][y + dirY].getItem() != null)
-            if(cells[x + dirX][y + dirY].getItem() instanceof Food)
-                if(((Food)cells[x + dirX][y + dirY].getItem()).getRemainingTurns() > 0)
-                    VazToScore(beetle.getBeetleType(),vaziat, Move.stepForward, -30);
+        if(cells[(x + dirX + height) % height][(y + dirY + width) % width].getItem() != null)
+            if(cells[(x + dirX + height) % height][(y + dirY + width) % width].getItem() instanceof Food)
+                if(((Food)cells[(x + dirX + height) % height][(y + dirY + width) % width].getItem()).getRemainingTurns() > 0)
+                    StateToScore(beetle.getBeetleType(),state, Move.stepForward, -30);
     }
 
 
-    void sickenFormation(Beetle beetle, Vaziat vaziat){
+    private void sickenFormation(Beetle beetle, State state, int dirX, int dirY){
         int x = beetle.getPosition().getX(), y = beetle.getPosition().getY();
         Cell[][] cells = map.getCells();
-        int dirX, dirY = dirX = 0;
-        switch (beetle.getDirection()) {
-            case Down:
-                dirY = -1;
-                break;
-            case Up:
-                dirY = 1;
-                break;
-            case Left:
-                dirX = -1;
-                break;
-            case Right:
-                dirX = 1;
-                break;
-        }
 
-        if(cells[x + dirX][y + dirY].getItem() != null)
-            if(cells[x + dirX][y + dirY].getItem() instanceof Trash)
-                VazToScore(beetle.getBeetleType(),vaziat, Move.stepForward, +20);
+        if(cells[(x + dirX + height) % height][(y + dirY + width) % width].getItem() != null)
+            if(cells[(x + dirX + height) % height][(y + dirY + width) % width].getItem() instanceof Trash)
+                StateToScore(beetle.getBeetleType(),state, Move.stepForward, +20);
 
 
-        if(cells[x + 2 * dirX][y + 2 * dirY].getItem() != null)
-            if(cells[x + 2 * dirX][y + 2 * dirY].getItem() instanceof Trash)
-                VazToScore(beetle.getBeetleType(),vaziat, Move.stepForward, +8);
+        if(cells[(x + 2 * dirX + 10 * height) % height][(y + 2 * dirY + 10 * width) % width].getItem() != null)
+            if(cells[(x + 2 * dirX + 10 * height) % height][(y + 2 * dirY + 10 * width) % width].getItem() instanceof Trash)
+                StateToScore(beetle.getBeetleType(),state, Move.stepForward, +8);
 
-        if(cells[x + dirY][y - dirX].getItem() != null)
-            if(cells[x + dirY][y - dirX].getItem() instanceof Trash)
-                VazToScore(beetle.getBeetleType(),vaziat, Move.turnRight, +8);
+        if(cells[(x + dirY + height * width) % height][(y - dirX + height * width) % width].getItem() != null)
+            if(cells[(x + dirY + height * width) % height][(y - dirX + height * width) % width].getItem() instanceof Trash)
+                StateToScore(beetle.getBeetleType(),state, Move.turnRight, +8);
 
-        if(cells[x - dirY][y + dirX].getItem() != null)
-            if(cells[x - dirY][y + dirX].getItem() instanceof Trash)
-                VazToScore(beetle.getBeetleType(),vaziat, Move.turnLeft, +8);
+        if(cells[(x - dirY + height * width) % height][(y + dirX + height * width) % width].getItem() != null)
+            if(cells[(x - dirY + height * width) % height][(y + dirX + height * width) % width].getItem() instanceof Trash)
+                StateToScore(beetle.getBeetleType(),state, Move.turnLeft, +8);
     }
 
-    void avoidIllnessFormation(Beetle beetle, Vaziat vaziat){
+    private void avoidIllnessFormation(Beetle beetle, State state, int dirX, int dirY){
         int x = beetle.getPosition().getX(), y = beetle.getPosition().getY();
         Cell[][] cells = map.getCells();
-        int dirX, dirY = dirX = 0;
-        switch (beetle.getDirection()) {
-            case Down:
-                dirY = -1;
-                break;
-            case Up:
-                dirY = 1;
-                break;
-            case Left:
-                dirX = -1;
-                break;
-            case Right:
-                dirX = 1;
-                break;
-        }
-
-        if(cells[x + dirX][y + dirY].getItem() != null)
-            if(cells[x + dirX][y + dirY].getItem() instanceof Trash)
-                if(((Trash)cells[x + dirX][y + dirY].getItem()).getRemainingTurns() > 0)
-                    VazToScore(beetle.getBeetleType(),vaziat, Move.stepForward, -30);
+        if(cells[(x + dirX + height) % height][(y + dirY + width) % width].getItem() != null)
+            if(cells[(x + dirX + height) % height][(y + dirY + width) % width].getItem() instanceof Trash)
+                if(((Trash)cells[(x + dirX + height) % height][(y + dirY + width) % width].getItem()).getRemainingTurns() > 0)
+                    StateToScore(beetle.getBeetleType(),state, Move.stepForward, -30);
     }
 
-    void rougeFormation(Beetle beetle, Vaziat vaziat){
+    private void rougeFormation(Beetle beetle, State state, int dirX, int dirY){
         int x = beetle.getPosition().getX(), y = beetle.getPosition().getY();
         Cell[][] cells = map.getCells();
-        int dirX, dirY = dirX = 0;
-        switch (beetle.getDirection()) {
-            case Down:
-                dirY = -1;
-                break;
-            case Up:
-                dirY = 1;
-                break;
-            case Left:
-                dirX = -1;
-                break;
-            case Right:
-                dirX = 1;
-                break;
-        }
 
         for(int i = -1; i <= 1; i++)
             if(getState(x - dirX - i * dirY, y - dirY - i * dirY, map.getMyCells()).equals(CellState.Ally)) {
                 int val = -10;
-                if(((Beetle) cells[x - dirX - i * dirY][y - dirY - i * dirY].getBeetle()).has_winge())
+                if(((Beetle) cells[(x - dirX - i * dirY + width * height) % height][(y - dirY - i * dirY + height * width) % width].getBeetle()).has_winge())
                     val = -20;
-                VazToScore(beetle.getBeetleType(),vaziat, Move.stepForward, val);
+                StateToScore(beetle.getBeetleType(),state, Move.stepForward, val);
             }
 
         for(int i = -1; i <= 1; i++)
             if(getState(x + 2 * dirX - i * dirY, y + 2* dirY - i * dirY, map.getMyCells()).equals(CellState.Ally)) {
                 int val = -10;
-                if(((Beetle) cells[x + 2 * dirX - i * dirY][y + 2 * dirY - i * dirY].getBeetle()).has_winge())
+                if(((Beetle) cells[(x + 2 * dirX - i * dirY + width * height) % height][(y + 2 * dirY - i * dirY + height * width) % width].getBeetle()).has_winge())
                     val = -20;
-                VazToScore(beetle.getBeetleType(),vaziat, Move.stepForward, val);
+                StateToScore(beetle.getBeetleType(),state, Move.stepForward, val);
             }
     }
 
-    int[][][][][] scores=new int[2][3][2][3][3];
+    private int[][][][][] scores=new int[2][3][2][3][3];
 
-    void VazToScore(BeetleType bt,Vaziat vaz, Move move, int value)
+    private void StateToScore(BeetleType bt, State state, Move move, int value)
     {
-        scores[bt.getValue()][vaz.right.getValue()][vaz.front.getValue()][vaz.left.getValue()][move.getValue()]+=value;
+        scores[bt.getValue()][state.right.getValue()][state.front.getValue()][state.left.getValue()][move.getValue()]+=value;
     }
 
-    CellState getState(int x, int y, Cell[] mycells){
+    private CellState getState(int x, int y, Cell[] myCells){
+        x = (x + width * height) % height;
+        y = (y + width * width) % width;
         Entity e = map.getCell(x, y).getBeetle();
         if (e == null)
             return CellState.Blank;
         Beetle b = (Beetle) e;
         Cell c = b.getPosition();
-        for (Cell cell: mycells)
+        for (Cell cell: myCells)
             if (cell.getX() == c.getX() && cell.getY() == c.getY())
                 return CellState.Ally;
         return CellState.Enemy;
     }
-    Map map;
+    private Map map;
 
-    int[][][][] strategy=new int[2][3][2][3];
+    private int[][][][] strategy=new int[2][3][2][3];
+    private int height, width;
     public void doTurn(World game)
     {
         // fill this method, we've presented a stupid AI for example!
-        Random rand = new Random();
 
         map = game.getMap();
         Cell[] cells = map.getMyCells();
         List<Beetle> beetles=new ArrayList<>();
-        List<Vaziat> vaziats = new ArrayList<>();
+        List<State> states = new ArrayList<>();
         for(int i=0;i<2;i++)
             for(int j=0;j<3;j++)
                 for(int k=0;k<2;k++)
@@ -378,10 +241,10 @@ public class AI
             if (beetle.getPower() >= max_power / 2 && beetle.getBeetleType().equals(BeetleType.LOW))
                 game.changeType(beetle, BeetleType.HIGH);
 
-            Vaziat vaziat = new Vaziat();
+            State state = new State();
             int x = beetle.getRow(), y = beetle.getColumn();
             int rightX = x, rightY = y, leftX = x, leftY = y, frontDirX = 0, frontDirY = 0;
-            int n = map.getHeight(), m = map.getWidth();
+            int n = height = map.getHeight(), m = width = map.getWidth();
             switch (beetle.getDirection()) {
                 case Down:
                     rightX = (x + 1) % m;
@@ -415,18 +278,18 @@ public class AI
                     break;
             }
 
-            vaziat.right = this.getState(rightX, rightY, cells);
-            vaziat.left = this.getState(leftX, leftY, cells);
+            state.right = this.getState(rightX, rightY, cells);
+            state.left = this.getState(leftX, leftY, cells);
             do {
                 x = (x + frontDirX + n) % n;
                 y = (y + frontDirY + m) % m;
                 CellState c = getState(x, y, cells);
                 if (c == CellState.Blank)
                     continue;
-                vaziat.front = c;
+                state.front = c;
                 break;
             } while (true);
-            vaziats.add(vaziat);
+            states.add(state);
         }
 
 
@@ -442,33 +305,48 @@ public class AI
                     }
         for(int i = 0; i < beetles.size(); i++){
             Beetle beetle = beetles.get(i);
-            Vaziat vaziat = vaziats.get(i);
+            State state = states.get(i);
+            int dirX, dirY = dirX = 0;
+            switch (beetle.getDirection()) {
+                case Down:
+                    dirY = -1;
+                    break;
+                case Up:
+                    dirY = 1;
+                    break;
+                case Left:
+                    dirX = -1;
+                    break;
+                case Right:
+                    dirX = 1;
+                    break;
+            }
             if(beetle.is_sick()) {
-                rougeFormation(beetle, vaziat);
-                attackFormation(beetle, vaziat);
+                rougeFormation(beetle, state, dirX, dirY);
+                attackFormation(beetle, state, dirX, dirY);
             }
             if(!beetle.has_winge()) {
-                infertilizationFormation(beetle, vaziat);
+                infertilityFormation(beetle, state, dirX, dirY);
                 if (beetle.getBeetleType().equals(BeetleType.HIGH)) {
-                    abscondFormation(beetle, vaziat);
+                    abscondFormation(beetle, state, dirX, dirY);
                     if(!beetle.is_sick())
-                        avoidIllnessFormation(beetle, vaziat);
+                        avoidIllnessFormation(beetle, state, dirX, dirY);
                 }
                 else {
-                    sickenFormation(beetle, vaziat);
-                    sacrificeFormation(beetle, vaziat);
-                    defenseFormation(beetle, vaziat);
+                    sickenFormation(beetle, state, dirX, dirY);
+                    sacrificeFormation(beetle, state, dirX, dirY);
+                    defenseFormation(beetle, state, dirX, dirY);
                 }
             }
             else{
-                abscondFormation(beetle, vaziat);
-                reproduceFormation(beetle, vaziat);
+                abscondFormation(beetle, state, dirX, dirY);
+                reproduceFormation(beetle, state, dirX, dirY);
                 if(!beetle.is_sick())
-                    avoidIllnessFormation(beetle, vaziat);
+                    avoidIllnessFormation(beetle, state, dirX, dirY);
                 if(beetle.getBeetleType().equals(BeetleType.HIGH)) {
-                    attackFormation(beetle, vaziat);
+                    attackFormation(beetle, state, dirX, dirY);
                 }
-                else defenseFormation(beetle, vaziat);
+                else defenseFormation(beetle, state, dirX, dirY);
             }
         }
         for (int i = 0; i < 3; i++)

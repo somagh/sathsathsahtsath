@@ -79,13 +79,13 @@ public class AI
         x = (x + width * height) % height;
         y = (y + width * height) % width;
         if(mapCells[x][y].getSlipper() != null) {
-                return -((Slipper) mapCells[x][y].getSlipper()).getRemainingTurns()*20;
+                return -((Slipper) mapCells[x][y].getSlipper()).getRemainingTurns()*400;
         }
         if(mapCells[(x + dirX + 10 * height) % height][(y + dirY + 10 * width) % width].getSlipper() != null) {
-            return -((Slipper) mapCells[(x + dirX + 10 * height) % height][(y + dirY + 10 * width) % width].getSlipper()).getRemainingTurns()*20;
+            return -((Slipper) mapCells[(x + dirX + 10 * height) % height][(y + dirY + 10 * width) % width].getSlipper()).getRemainingTurns()*400;
         }
         if(mapCells[(x + 2 * dirX + 10 * height) % height][(y + 2 * dirY + 10 * width) % width].getSlipper() != null) {
-            return -((Slipper) mapCells[(x + 2 * dirX + 10 * height) % height][(y + 2 * dirY + 10 * width) % width].getSlipper()).getRemainingTurns()*10;
+            return -((Slipper) mapCells[(x + 2 * dirX + 10 * height) % height][(y + 2 * dirY + 10 * width) % width].getSlipper()).getRemainingTurns()*200;
         }
         return 0;
     }
@@ -218,7 +218,6 @@ public class AI
     private int height, width;
     public void doTurn(World game)
     {
-        // fill this method, we've presented a stupid AI for example!
 
         map = game.getMap();
         Cell[] cells = map.getMyCells();
@@ -298,10 +297,10 @@ public class AI
                 for(int k=0;k<2;k++)
                     for(int l=0;l<3;l++)
                     {
-                        scores[i][j][k][l][1] = 10; //moving forward is good
+                        scores[i][j][k][l][1] = 100; //moving forward is good
                         scores[i][j][k][l][0] = 0;
                         scores[i][j][k][l][2] = 0;
-                        scores[i][j][k][l][strategy[i][j][k][l]] += 10; //don't changing strategy is good
+                        scores[i][j][k][l][strategy[i][j][k][l]] += 150; //don't changing strategy is good
                     }
         for(int i = 0; i < beetles.size(); i++){
             Beetle beetle = beetles.get(i);
@@ -353,22 +352,22 @@ public class AI
             for (int j = 0; j < 2; j++)
                 for (int k = 0; k < 3; k++) {
                     int a = 1;
-                    if (scores[0][i][j][k][0] > scores[0][i][j][k][1] && scores[0][i][j][k][0] > scores[0][i][j][k][2])
+                    if (scores[BeetleType.LOW.getValue()][i][j][k][0] > scores[BeetleType.LOW.getValue()][i][j][k][1] && scores[BeetleType.LOW.getValue()][i][j][k][0] > scores[BeetleType.LOW.getValue()][i][j][k][2])
                         a = 0;
-                    if (scores[0][i][j][k][2] > scores[0][i][j][k][1] && scores[0][i][j][k][2] > scores[0][i][j][k][0])
+                    if (scores[BeetleType.LOW.getValue()][i][j][k][2] > scores[BeetleType.LOW.getValue()][i][j][k][1] && scores[BeetleType.LOW.getValue()][i][j][k][2] > scores[BeetleType.LOW.getValue()][i][j][k][0])
                         a = 2;
-                    if (a != strategy[0][i][j][k]) {
+                    if (a != strategy[BeetleType.LOW.getValue()][i][j][k]) {
                         game.changeStrategy(BeetleType.LOW, CellState.values()[i], CellState.values()[j], CellState.values()[k], Move.values()[a]);
-                        strategy[0][i][j][k] = a;
+                        strategy[BeetleType.LOW.getValue()][i][j][k] = a;
                     }
                     a = 1;
-                    if (scores[1][i][j][k][0] > scores[1][i][j][k][1] && scores[1][i][j][k][0] > scores[1][i][j][k][2])
+                    if (scores[BeetleType.HIGH.getValue()][i][j][k][0] > scores[BeetleType.HIGH.getValue()][i][j][k][1] && scores[BeetleType.HIGH.getValue()][i][j][k][0] > scores[BeetleType.HIGH.getValue()][i][j][k][2])
                         a = 0;
-                    if (scores[1][i][j][k][2] > scores[1][i][j][k][1] && scores[1][i][j][k][2] > scores[1][i][j][k][0])
+                    if (scores[BeetleType.HIGH.getValue()][i][j][k][2] > scores[BeetleType.HIGH.getValue()][i][j][k][1] && scores[BeetleType.HIGH.getValue()][i][j][k][2] > scores[BeetleType.HIGH.getValue()][i][j][k][0])
                         a = 2;
-                    if (a != strategy[1][i][j][k]) {
+                    if (a != strategy[BeetleType.HIGH.getValue()][i][j][k]) {
                         game.changeStrategy(BeetleType.HIGH, CellState.values()[i], CellState.values()[j], CellState.values()[k], Move.values()[a]);
-                        strategy[1][i][j][k] = a;
+                        strategy[BeetleType.HIGH.getValue()][i][j][k] = a;
                     }
                 }
     }

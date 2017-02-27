@@ -79,13 +79,13 @@ public class AI
         x = (x + width * height) % height;
         y = (y + width * height) % width;
         if(mapCells[x][y].getSlipper() != null) {
-                return -((Slipper) mapCells[x][y].getSlipper()).getRemainingTurns()*400;
+                return -(((Slipper) mapCells[x][y].getSlipper()).getRemainingTurns())*40;
         }
         if(mapCells[(x + dirX + 10 * height) % height][(y + dirY + 10 * width) % width].getSlipper() != null) {
-            return -((Slipper) mapCells[(x + dirX + 10 * height) % height][(y + dirY + 10 * width) % width].getSlipper()).getRemainingTurns()*400;
+            return -(((Slipper) mapCells[(x + dirX + 10 * height) % height][(y + dirY + 10 * width) % width].getSlipper()).getRemainingTurns())*40;
         }
         if(mapCells[(x + 2 * dirX + 10 * height) % height][(y + 2 * dirY + 10 * width) % width].getSlipper() != null) {
-            return -((Slipper) mapCells[(x + 2 * dirX + 10 * height) % height][(y + 2 * dirY + 10 * width) % width].getSlipper()).getRemainingTurns()*200;
+            return -(((Slipper) mapCells[(x + 2 * dirX + 10 * height) % height][(y + 2 * dirY + 10 * width) % width].getSlipper()).getRemainingTurns())*20;
         }
         return 0;
     }
@@ -230,14 +230,17 @@ public class AI
                         for(int m=0;m<3;m++)
                             scores[i][j][k][l][m]=0;
         int max_power=0;
+        System.out.println(cells[0].getX()+" "+cells[0].getY());
         for (Cell cell : cells) {
+
+
             beetles.add((Beetle) cell.getBeetle());
             max_power = Math.max(max_power, beetles.get(beetles.size() - 1).getPower());
         }
         for(Beetle beetle:beetles) {
-            if (beetle.getPower() < max_power / 2 && beetle.getBeetleType().equals(BeetleType.HIGH))
+            if (beetle.getPower() < max_power / 3 && beetle.getBeetleType().equals(BeetleType.HIGH))
                 game.changeType(beetle, BeetleType.LOW);
-            if (beetle.getPower() >= max_power / 2 && beetle.getBeetleType().equals(BeetleType.LOW))
+            if (beetle.getPower() >= max_power*2 / 3 && beetle.getBeetleType().equals(BeetleType.LOW))
                 game.changeType(beetle, BeetleType.HIGH);
 
             State state = new State();
@@ -297,10 +300,10 @@ public class AI
                 for(int k=0;k<2;k++)
                     for(int l=0;l<3;l++)
                     {
-                        scores[i][j][k][l][1] = 100; //moving forward is good
+                        scores[i][j][k][l][1] = 10; //moving forward is good
                         scores[i][j][k][l][0] = 0;
                         scores[i][j][k][l][2] = 0;
-                        scores[i][j][k][l][strategy[i][j][k][l]] += 150; //don't changing strategy is good
+                        scores[i][j][k][l][strategy[i][j][k][l]] += 50; //don't changing strategy is good
                     }
         for(int i = 0; i < beetles.size(); i++){
             Beetle beetle = beetles.get(i);
@@ -308,10 +311,10 @@ public class AI
             int dirX, dirY = dirX = 0;
             switch (beetle.getDirection()) {
                 case Down:
-                    dirY = -1;
+                    dirY = 1;
                     break;
                 case Up:
-                    dirY = 1;
+                    dirY = -1;
                     break;
                 case Left:
                     dirX = -1;
@@ -325,27 +328,32 @@ public class AI
                 attackFormation(beetle, state, dirX, dirY);
             }
             if(!beetle.has_winge()) {
-                infertilityFormation(beetle, state, dirX, dirY);
+//              infertilityFormation(beetle, state, dirX, dirY);
+                reproduceFormation(beetle, state, dirX, dirY);
                 if (beetle.getBeetleType().equals(BeetleType.HIGH)) {
                     abscondFormation(beetle, state, dirX, dirY);
                     if(!beetle.is_sick())
                         avoidIllnessFormation(beetle, state, dirX, dirY);
+                    //for(int _1 = 0; _1 < 10; _1++)
+                        attackFormation(beetle, state, dirX, dirY);
+                    rogueFormation(beetle, state, dirX, dirY);
                 }
                 else {
-                    sickenFormation(beetle, state, dirX, dirY);
-                    sacrificeFormation(beetle, state, dirX, dirY);
                     defenseFormation(beetle, state, dirX, dirY);
                 }
             }
             else{
-                abscondFormation(beetle, state, dirX, dirY);
-                reproduceFormation(beetle, state, dirX, dirY);
-                if(!beetle.is_sick())
-                    avoidIllnessFormation(beetle, state, dirX, dirY);
+                for(int _1 = 0; _1 < 20; _1++) {
+                    abscondFormation(beetle, state, dirX, dirY);
+                    reproduceFormation(beetle, state, dirX, dirY);
+                    if (!beetle.is_sick())
+                        avoidIllnessFormation(beetle, state, dirX, dirY);
+                }
                 if(beetle.getBeetleType().equals(BeetleType.HIGH)) {
                     attackFormation(beetle, state, dirX, dirY);
                 }
-                else defenseFormation(beetle, state, dirX, dirY);
+                else
+                    defenseFormation(beetle, state, dirX, dirY);
             }
         }
         for (int i = 0; i < 3; i++)

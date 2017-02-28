@@ -177,7 +177,7 @@ public class AI
         if(cells[(y + dirY + height) % height][(x + dirX + width) % width].getItem() != null)
             if(cells[(y + dirY + height) % height][(x + dirX + width) % width].getItem() instanceof Trash)
                 if(((Trash)cells[(y + dirY + height) % height][(x + dirX + width) % width].getItem()).getRemainingTurns() > 0) {
-                    System.out.println(beetle.getRow() + " " + beetle.getColumn() + beetle.getBeetleType().getValue() + " " + state.right.getValue() + " " + state.front.getValue() + " " + state.left.getValue());
+                   // System.out.println(beetle.getRow() + " " + beetle.getColumn() +" "+ beetle.getBeetleType().getValue() + " " + state.right.getValue() + " " + state.front.getValue() + " " + state.left.getValue());
                     StateToScore(beetle.getBeetleType(), state, Move.stepForward, -30);
                 }
     }
@@ -311,11 +311,11 @@ public class AI
                 for(int k=0;k<2;k++)
                     for(int l=0;l<3;l++)
                     {
-                        scores[i][j][k][l][1] = 25; //moving forward is good
+                        scores[i][j][k][l][1] = 30; //moving forward is good
                         scores[i][j][k][l][0] = 0;
                         scores[i][j][k][l][2] = 0;
                         if(game.getCurrentTurn()>0)
-                        scores[i][j][k][l][strategy[i][j][k][l]] += 25; //don't changing strategy is good
+                            scores[i][j][k][l][strategy[i][j][k][l]] += 25; //don't changing strategy is good
                     }
 
         for(int i = 0; i < beetles.size(); i++){
@@ -381,15 +381,18 @@ public class AI
         //System.out.println(scores[1][0][0][2][2]);
         //System.out.println(scores[1][0][0][2][0]);
         //System.out.println();
+        System.out.println(strategy[0][2][0][2]);
         for (int i = 0; i < 3; i++)
             for (int j = 0; j < 2; j++)
                 for (int k = 0; k < 3; k++) {
                     int a = 1;
-                    if (scores[BeetleType.LOW.getValue()][i][j][k][0] > scores[BeetleType.LOW.getValue()][i][j][k][1] && scores[BeetleType.LOW.getValue()][i][j][k][0] > scores[BeetleType.LOW.getValue()][i][j][k][2])
+                    if (scores[BeetleType.LOW.getValue()][i][j][k][0] > scores[BeetleType.LOW.getValue()][i][j][k][1] && scores[BeetleType.LOW.getValue()][i][j][k][0] >= scores[BeetleType.LOW.getValue()][i][j][k][2])
                         a = 0;
-                    if (scores[BeetleType.LOW.getValue()][i][j][k][2] > scores[BeetleType.LOW.getValue()][i][j][k][1] && scores[BeetleType.LOW.getValue()][i][j][k][2] > scores[BeetleType.LOW.getValue()][i][j][k][0])
+                    if (scores[BeetleType.LOW.getValue()][i][j][k][2] > scores[BeetleType.LOW.getValue()][i][j][k][1] && scores[BeetleType.LOW.getValue()][i][j][k][2] >= scores[BeetleType.LOW.getValue()][i][j][k][0])
                         a = 2;
                     if (a != strategy[BeetleType.LOW.getValue()][i][j][k]) {
+                        //if(game.getCurrentTurn()>1)
+                        //System.out.println(i+" "+j+" "+k+" "+a);
                         game.changeStrategy(BeetleType.LOW, CellState.values()[i], CellState.values()[j], CellState.values()[k], Move.values()[a]);
                         strategy[BeetleType.LOW.getValue()][i][j][k] = a;
                     }
@@ -399,6 +402,8 @@ public class AI
                     if (scores[BeetleType.HIGH.getValue()][i][j][k][2] > scores[BeetleType.HIGH.getValue()][i][j][k][1] && scores[BeetleType.HIGH.getValue()][i][j][k][2] >= scores[BeetleType.HIGH.getValue()][i][j][k][0])
                         a = 2;
                     if (a != strategy[BeetleType.HIGH.getValue()][i][j][k]) {
+                        //if(game.getCurrentTurn()>1)
+                        //    System.out.println(i+" "+j+" "+k+" "+a);
                         game.changeStrategy(BeetleType.HIGH, CellState.values()[i], CellState.values()[j], CellState.values()[k], Move.values()[a]);
                         strategy[BeetleType.HIGH.getValue()][i][j][k] = a;
                     }

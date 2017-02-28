@@ -18,6 +18,14 @@ import java.util.List;
 public class AI
 {
 
+    public AI()
+    {
+        for(int i=0;i<2;i++)
+            for(int j=0;j<3;j++)
+                for(int k=0;k<2;k++)
+                    for(int l=0;l<3;l++)
+                        strategy[i][j][k][l]=-1;
+    }
     class State{
         CellState front, right, left;
     }
@@ -113,20 +121,20 @@ public class AI
 
         if(cells[(y + dirY + 10 * height) % height][(x + dirX + 10 * width) % width].getItem() != null)
             if(cells[(y + dirY + 10 * height) % height][(x + dirX + 10 * width) % width].getItem() instanceof Food)
-                StateToScore(beetle.getBeetleType(),state, Move.stepForward, +20);
+                StateToScore(beetle.getBeetleType(),state, Move.stepForward, +30);
 
 
         if(cells[(y + 2 * dirY + 10 * height) % height][(x + 2 * dirX + 10 * width) % width].getItem() != null)
             if(cells[(y + 2 * dirY + 10 * height) % height][(x + 2 * dirX + 10 * width) % width].getItem() instanceof Food)
-                StateToScore(beetle.getBeetleType(),state, Move.stepForward, +8);
+                StateToScore(beetle.getBeetleType(),state, Move.stepForward, +17);
 
         if(cells[(y + dirX + height * width) % height][(x - dirY + height * width) % width].getItem() != null)
             if(cells[(y + dirX + height * width) % height][(x-dirY + height * width) % width].getItem() instanceof Food)
-                StateToScore(beetle.getBeetleType(),state, Move.turnRight, +8);
+                StateToScore(beetle.getBeetleType(),state, Move.turnRight, +17);
 
         if(cells[(y-dirX + height * width) % height][(x+dirY + height * width) % width].getItem() != null)
             if(cells[(y-dirX + height * width) % height][(x+dirY + height * width) % width].getItem() instanceof Food)
-                StateToScore(beetle.getBeetleType(),state, Move.turnLeft, +8);
+                StateToScore(beetle.getBeetleType(),state, Move.turnLeft, +17);
     }
 
     private void infertilityFormation(Beetle beetle, State state, int dirX, int dirY){
@@ -160,8 +168,8 @@ public class AI
 
         if(cells[(y-dirX + height * width) % height][(x+dirY + height * width) % width].getItem() != null)
             if(cells[(y-dirX + height * width) % height][(x+dirY + height * width) % width].getItem() instanceof Trash)
-                StateToScore(beetle.getBeetleType(),state, Move.turnLeft, +8);
-    }
+                    StateToScore(beetle.getBeetleType(),state, Move.turnLeft, +8);
+                }
 
     private void avoidIllnessFormation(Beetle beetle, State state, int dirX, int dirY){
         int x = beetle.getPosition().getY(), y = beetle.getPosition().getX();
@@ -169,7 +177,7 @@ public class AI
         if(cells[(y + dirY + height) % height][(x + dirX + width) % width].getItem() != null)
             if(cells[(y + dirY + height) % height][(x + dirX + width) % width].getItem() instanceof Trash)
                 if(((Trash)cells[(y + dirY + height) % height][(x + dirX + width) % width].getItem()).getRemainingTurns() > 0) {
-             //       System.out.println(beetle.getRow() + " " + beetle.getColumn() + beetle.getBeetleType().getValue() + " " + state.right.getValue() + " " + state.front.getValue() + " " + state.left.getValue());
+                    System.out.println(beetle.getRow() + " " + beetle.getColumn() + beetle.getBeetleType().getValue() + " " + state.right.getValue() + " " + state.front.getValue() + " " + state.left.getValue());
                     StateToScore(beetle.getBeetleType(), state, Move.stepForward, -30);
                 }
     }
@@ -199,7 +207,7 @@ public class AI
 
     private void StateToScore(BeetleType bt, State state, Move move, int value)
     {
-        scores[bt.getValue()][state.left.getValue()][state.front.getValue()][state.right.getValue()][move.getValue()]+=value;
+        scores[bt.getValue()][state.right.getValue()][state.front.getValue()][state.left.getValue()][move.getValue()]+=value;
     }
 
     private CellState getState(int x, int y, Cell[] myCells){
@@ -241,10 +249,10 @@ public class AI
         }
         for(int i=0;i<beetles.size();i++) {
             Beetle beetle=beetles.get(i);
-            if (beetle.getPower() < max_power *3 / 7 && beetle.getBeetleType().equals(BeetleType.HIGH))
-                game.changeType(beetle, BeetleType.LOW);
-            if (beetle.getPower() >= max_power*4 / 7 && beetle.getBeetleType().equals(BeetleType.LOW))
+            if (beetle.getPower() < max_power *3 / 7 && beetle.getBeetleType().equals(BeetleType.LOW))
                 game.changeType(beetle, BeetleType.HIGH);
+            if (beetle.getPower() >= max_power*4 / 7 && beetle.getBeetleType().equals(BeetleType.HIGH))
+                game.changeType(beetle, BeetleType.LOW);
 
             State state = new State();
             int x = beetle.getRow(), y = beetle.getColumn();
@@ -252,14 +260,14 @@ public class AI
             int n = height = map.getHeight(), m = width = map.getWidth();
             switch (beetle.getDirection()) {
                 case Down:
-                    rightX = (x + 1) % m;
+                    rightX = (x + 1) % n;
                     leftY = (y + 1) % m;
                     rightY = (y + m - 1) % m;
                     leftX = rightX;
                     frontDirX = 1;
                     break;
                 case Up:
-                    rightX = (x + n - 1) % m;
+                    rightX = (x + n - 1) % n;
                     rightY = (y + 1) % m;
                     leftY = (y + m - 1) % m;
                     leftX = rightX;
@@ -267,18 +275,18 @@ public class AI
                     break;
                 case Right:
 
-                    rightX = (x + 1) % m;
+                    rightX = (x + 1) % n;
                     leftY = (y + 1) % m;
                     rightY = leftY;
-                    leftX = (x + n - 1) % m;
+                    leftX = (x + n - 1) % n;
                     frontDirY = 1;
                     break;
                 case Left:
 
-                    leftX = (x + 1) % m;
+                    leftX = (x + 1) % n;
                     leftY = (y + m - 1) % m;
                     rightY = leftY;
-                    rightX = (x + n - 1) % m;
+                    rightX = (x + n - 1) % n;
                     frontDirY = -1;
                     break;
             }
@@ -303,12 +311,13 @@ public class AI
                 for(int k=0;k<2;k++)
                     for(int l=0;l<3;l++)
                     {
-                        scores[i][j][k][l][1] = 50; //moving forward is good
+                        scores[i][j][k][l][1] = 25; //moving forward is good
                         scores[i][j][k][l][0] = 0;
                         scores[i][j][k][l][2] = 0;
                         if(game.getCurrentTurn()>0)
-                        scores[i][j][k][l][strategy[i][j][k][l]] += 50; //don't changing strategy is good
+                        scores[i][j][k][l][strategy[i][j][k][l]] += 25; //don't changing strategy is good
                     }
+
         for(int i = 0; i < beetles.size(); i++){
             Beetle beetle = beetles.get(i);
             State state = states.get(i);
@@ -334,7 +343,7 @@ public class AI
             if(!beetle.has_winge()) {
 //              infertilityFormation(beetle, state, dirX, dirY);
                 reproduceFormation(beetle, state, dirX, dirY);
-                if (beetle.getBeetleType().equals(BeetleType.HIGH)) {
+                if (beetle.getBeetleType().equals(BeetleType.LOW)) {
                     abscondFormation(beetle, state, dirX, dirY);
                     if(!beetle.is_sick())
                         avoidIllnessFormation(beetle, state, dirX, dirY);
@@ -347,15 +356,21 @@ public class AI
                 }
             }
             else{
-                for(int _1 = 0; _1 < 8; _1++) {
+                for(int _1 = 0; _1 < 7; _1++) {
                     abscondFormation(beetle, state, dirX, dirY);
                     abscondFormation(beetle, state, dirX, dirY);
                     abscondFormation(beetle, state, dirX, dirY);
                     reproduceFormation(beetle, state, dirX, dirY);
-                    if (!beetle.is_sick()) {
+                    reproduceFormation(beetle, state, dirX, dirY);
+                    if (!beetle.is_sick())
+                    {
                         avoidIllnessFormation(beetle, state, dirX, dirY);
                         avoidIllnessFormation(beetle, state, dirX, dirY);
                         avoidIllnessFormation(beetle, state, dirX, dirY);
+                        if(beetle.getBeetleType()==BeetleType.LOW) {
+                            avoidIllnessFormation(beetle, state, dirX, dirY);
+                            avoidIllnessFormation(beetle, state, dirX, dirY);
+                        }
                     }
                 }
                 defenseFormation(beetle, state, dirX, dirY);
@@ -383,12 +398,11 @@ public class AI
                         a = 0;
                     if (scores[BeetleType.HIGH.getValue()][i][j][k][2] > scores[BeetleType.HIGH.getValue()][i][j][k][1] && scores[BeetleType.HIGH.getValue()][i][j][k][2] >= scores[BeetleType.HIGH.getValue()][i][j][k][0])
                         a = 2;
-                    //if(i==2&&j==0&&k==2)
-                  //      System.out.println(a);
                     if (a != strategy[BeetleType.HIGH.getValue()][i][j][k]) {
                         game.changeStrategy(BeetleType.HIGH, CellState.values()[i], CellState.values()[j], CellState.values()[k], Move.values()[a]);
                         strategy[BeetleType.HIGH.getValue()][i][j][k] = a;
                     }
+
                 }
     }
 
